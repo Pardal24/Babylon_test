@@ -19,7 +19,7 @@
     "typescript": "^3.4.5"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "react-scripts --openssl-legacy-provider start",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "electron-static": "npm run build-web && electron build/electron.js",
@@ -33,7 +33,7 @@
     "appId": "com.electron.babylon",
     "copyright": "MIT",
     "productName": "babylon-react-electron-app",
-    "win":{
+    "win": {
       "icon": "public/icon.png",
       "publisherName": "Todor Imreorov"
     }
