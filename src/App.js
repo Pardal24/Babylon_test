@@ -33,7 +33,8 @@ const App = () => {
       });
       console.log('Cropped and filtered image', res)
       const blob = await fetch(res.preview).then((r) => r.blob())
-      setCroppedImageUrl(res.preview);
+      let imgUrl = URL.createObjectURL(res)
+      setCroppedImageUrl(imgUrl);
     } catch (e) {
       console.log('error', e)
     }
@@ -68,32 +69,42 @@ const App = () => {
     onChange: onImgSelection
   }
 
+  const [slots, setSlots] = useState(new Array(6).fill(null));
+  const [activeSlot, setActiveSlot] = useState(0);
+
+  const handleSlotChange = (slotIndex) => {
+    setActiveSlot(slotIndex);
+  };
+  
+  const handleCropComplete = async () => {
+    const updatedSlots = [...slots];
+    updatedSlots[activeSlot] = croppedImageUrl;
+    setSlots(updatedSlots);
+    setImg(undefined);
+    setCropState();
+  };
+
   return (
     <div className='root-container'>
       <Header />
-      <div className='multi.slot.cropper'> </div>
-      <div className='content-container'>
-        {cropState && (
-          <div className='buttons-container'>
-            <Button onClick={doSomething} icon={<CheckOutlined />}>
-              Done
+      <div className='multi.slot.cropper'> 
+        <div className="slot-selector">
+          {slots.map((_, index) => (
+            <Button key={index} onClick={() => handleSlotChange(index)}>
+              Slot {index + 1}
             </Button>
-            <Button
-              onClick={() => {
-                cropperRef.current.backToCrop()
-              }}
-            >
-              Back
-            </Button>
-            <Button
-              onClick={() => {
-                setImg(undefined)
-                setCropState()
-              }}
-            >
-              Reset
-            </Button>
-            <div className='Submit'>
+          ))}
+        </div>
+        <Button onClick={handleCropComplete}>Save to Slot {activeSlot + 1}</Button>
+        {/* <div className="slot-previews">
+          {slots.map((image, index) => (
+            <div key={index} className="slot-preview">
+              {image && <img src={image} alt={`Slot ${index + 1}`} />}
+            </div>
+          ))}
+        </div> */}
+      </div>
+      <div className='Submit'>
               <form onSubmit = {handleSubmit}>
                 <label>Height:</label>
                 <input 
@@ -123,21 +134,42 @@ const App = () => {
                 </p>    
                 <button>Submit</button>       
               </form>
-            </div>
+      </div>
+      <div className='content-container'>
+        {cropState && (
+          <div className='buttons-container'>
+            <Button onClick={doSomething} icon={<CheckOutlined />}>
+              Done
+            </Button>
+            <Button
+              onClick={() => {
+                cropperRef.current.backToCrop()
+              }}
+            >
+              Back
+            </Button>
+            <Button
+              onClick={() => {
+                setImg(undefined)
+                setCropState()
+              }}
+            >
+              Reset
+            </Button>
           </div>
 
         )}
 
-        <Cropper
+        {slots[activeSlot]? <img style={{width: "50%"}}  src={slots[activeSlot]}/> :<Cropper
           openCvPath='./opencv/opencv.js'
           ref={cropperRef}
           image={img}
           onChange={onChange}
           onDragStop={onDragStop}
           maxWidth={window.innerWidth - 10}
-        />
+        />}
         {cropState?.loading && <Spin />}
-        {!img && (
+        {!img && !slots[activeSlot] &&(
           <Dragger {...draggerProps}>
             <p>
               <PlusOutlined />
